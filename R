@@ -1,0 +1,83 @@
+
+#installing packages needed 
+install.packages('palmerpenguins')
+library('palmerpenguins')
+install.packages('ggplot2')
+library('ggplot2')
+library('leaflet')
+
+#reading CSV file of air pollutants 
+
+who_ambient_air_quality_database_version_2023_v6_0_ <- readxl::read_excel("Downloads/who_ambient_air_quality_database_version_2023_(v6.0).xlsx", sheet = "Update 2023 (V6.0)")  
+       
+                                                                          
+#to show what is in the file      
+View(who_ambient_air_quality_database_version_2023_v6_0_)
+
+#created a shortcut name for data 
+
+data <- who_ambient_air_quality_database_version_2023_v6_0_
+
+#Exploring the data 
+head(data)
+colnames(data)
+
+summary(data)
+
+
+#checking columns and converting data types when appropriate 
+
+data$pm10_concentration[is.na(data$pm10_concentration)] <-0
+data$pm10_concentration <- as.numeric(data$pm10_concentration)
+
+str(data$pm10_concentration)
+
+mean_value <- mean(data$pm10_concentration)
+
+
+
+
+
+data$pm25_concentration[is.na(data$pm25_concentration)] <-0 
+
+
+#changed the data type of column to numeric from char 
+data$pm25_concentration <- as.numeric(data$pm25_concentration)
+
+
+na.omit(data$pm25_concentration)
+
+#checking the data types of every column 
+str(data)
+
+mean(data$no2_concentration, na.rm = TRUE)
+
+#gives summary of the data (descriptive statistics)
+summary(data)
+
+
+class(data$pm25_concentration)
+
+#getting the mean of this column 
+mean(data$pm25_concentration, na.rm = TRUE)
+mean(data$no2_concentration, na.rm = TRUE)
+
+#Needed to convert data types of numeric when applicable 
+
+
+install.packages('maps')
+library(maps)
+world_map <- map_data("world")
+ggplot(world_map, aes(long, lat, group = group)) + 
+  geom_polygon(fill = "gray90", color = "gray50") + 
+  coord_map("mercator") + 
+  ggtitle("World Map") + 
+  theme_void()
+
+install.packages('ggplot2')
+library('ggplot2')
+ggplot(data , aes(x = no2_concentration, y = year, color = country_name)) 
+
+
+
+
