@@ -1,0 +1,112 @@
+
+Imported necessary libraries for data cleaning, analysis & visualisation
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import statistics as st
+import seaborn as sns
+
+Read CSV file ambientair.csv 
+pd.options.display.max_rows = 9999
+df = pd.read_csv('ambientair.csv', header=1, index_col=None, sep = ';', names = ['who_region', 'iso3', 'country_name', 'city', 'year', 'version','pm10_concentration','pm25_concentration','no2_concentration','pm10_tempcov','pm25_tempcov','no2_tempcov','type_of_stations','reference','web_link','population','population_source','latitude','longitude','who_ms'])
+
+print(df.columns)
+print(df.head())
+
+print(df.dtypes)
+
+# Fill missing values in 'population' column with a default value (e.g., 0)
+df['population'].fillna('0', inplace=True)
+
+# Remove commas from 'population' column and then convert to int64
+df['population'] = df['population'].str.replace(',', '', regex=True).astype('int64')
+
+# Check the updated data types
+print(df.dtypes)
+df['latitude'] = df['latitude'].str.replace(',', '.').astype('float64')
+df['longitude'] = df['longitude'].str.replace(',', '.').astype('float64')
+
+# Change data types using astype()
+df['who_region'] = df['who_region'].astype('category')
+df['iso3'] = df['iso3'].astype('category')
+df['year'] = df['year'].astype('int64')
+df['version'] = df['version'].astype('object')
+df['pm10_concentration'] = df['pm10_concentration'].astype('float')
+df['pm25_concentration'] = df['pm25_concentration'].astype('float')
+df['no2_concentration'] = df['no2_concentration'].astype('float')
+df['pm10_tempcov'] = df['pm10_tempcov'].astype('float64')
+df['pm25_tempcov'] = df['pm25_tempcov'].astype('float64')
+df['no2_tempcov'] = df['no2_tempcov'].astype('float64')
+df['type_of_stations'] = df['type_of_stations'].astype('category')
+df['reference'] = df['reference'].astype('object')
+df['web_link'] = df['web_link'].astype('object')
+df['population'] = df['population'].astype('int64')  # or int64 if it's always integer
+df['population_source'] = df['population_source'].astype('float64')
+df['latitude'] = df['latitude'].astype('float64')
+df['longitude'] = df['longitude'].astype('float64')
+df['who_ms'] = df['who_ms'].astype('int64')
+
+# Check the updated data types
+print(df.dtypes)
+Use descriptive statistics
+
+from scipy.stats import ttest_ind
+from scipy.stats import ttest_1samp
+T-test between no2 and pm25 to check fo relationship
+
+no2 = df['no2_concentration'].dropna()
+pm25 = df['pm25_concentration'].dropna()
+
+# perform a two-sample t-test to compare the means of the two columns
+t_statistic, p_value = ttest_ind(no2, pm25)
+
+# print the t-statistic and p-value
+print("t-statistic:", t_statistic)
+print("p-value:", p_value)
+
+To ensure, included Pearson correlation coefficient.  
+correlation = df['no2_concentration'].corr(df['pm25_concentration'])
+print(f"Pearson Correlation Coefficient: {correlation:.2f}")
+Relationship between population and pm25.  
+correlation = df['population'].corr(df['pm25_concentration'])
+print(f"Pearson Correlation Coefficient: {correlation:.2f}")
+
+correlation = df['population'].corr(df['no2_concentration'])
+print(f"Pearson Correlation Coefficient: {correlation:.2f}")
+correlation = df['no2_concentration'].corr(df['pm25_concentration'])
+print(f"Pearson Correlation Coefficient: {correlation:.2f}")
+import statsmodels.api as sm
+
+df['no2_concentration'].fillna(df['no2_concentration'].mean(), inplace=True)
+df['pm25_concentration'].fillna(df['pm25_concentration'].mean(), inplace=True)
+
+
+# Data preparation (similar to what we did before)
+df['no2_concentration'] = pd.to_numeric(df['no2_concentration'], errors='coerce')
+df['pm25_concentration'] = pd.to_numeric(df['pm25_concentration'], errors='coerce')
+
+# Create a DataFrame for the regression analysis
+X = df['no2_concentration']  # Independent variable (NO2)
+y = df['pm25_concentration']  # Dependent variable (PM2.5)
+
+# Add a constant term to the independent variable
+X = sm.add_constant(X)
+
+# Perform linear regression
+model = sm.OLS(y, X).fit()
+
+# Print the regression summary
+print(model.summary())
+
+# Convert 'year' to datetime
+df['year'] = pd.to_datetime(df['year'], format='%Y')
+
+# Ensure 'no2_concentration' and 'pm25_concentration' are numeric
+df['no2_concentration'] = pd.to_numeric(df['no2_concentration'], errors='coerce')
+df['pm25_concentration'] = pd.to_numeric(df['pm25_concentration'], errors='coerce')
+
+# Set the datetime column as the index
+df.set_index('year', inplace=True)
+
+
+
